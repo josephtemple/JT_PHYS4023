@@ -1,1 +1,1 @@
-Hello! My name is Joseph Temple, and this repository will store my homework and assignments for PHYS 4023 Computational Physics at Arkansas Tech University. I intend to make use of Python and/or Julia throughout the course. Also looking forward to using Github CLI for the first time. GO WONDERBOYS !!
+Hello! My name is Joseph Temple, and this repository will store my homework and assignments for PHYS 4023 Computational Physics at Arkansas Tech University. I intend to make use of Python and/or Julia throughout the course. GO WONDERBOYS !!
