@@ -1,0 +1,19 @@
+1a. Navigate to this directory.
+1b. If establishing a connection to a new repository, we need to start with:
+
+git init
+git remote add origin https://github.com/josephtemple/REPO_NAME.git
+git add "FOLDER NAME"
+git comment -m "Init commit"
+git branch -M main
+git push -u origin main
+
+
+2. For an existing repo, we just do the same stuff but with less detail. Note that the 
+third line is sorta optional, just cleans up any requests left lingering.
+
+git add "FOLDER NAME"
+git commit -m "COMMIT COMMENT"
+git pull --rebase
+git push
+ 

@@ -1,0 +1,4 @@
+conda create -n NAME python=3.10
+conda activate NAME
+pip install numpy matplotlib scipy ipykernel OTHERS
+python -m ipykernel install --user --name NAME --display-name "Python (NAME)"
