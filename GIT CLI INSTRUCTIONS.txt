@@ -9,8 +9,7 @@ git branch -M main
 git push -u origin main
 
 
-2. For an existing repo, we just do the same stuff but with less detail. Note that the 
-third line is sorta optional, just cleans up any requests left lingering.
+2. For an existing repo, we just do the same stuff but with less detail.
 
 git add "FOLDER NAME"
 git commit -m "COMMIT COMMENT"
