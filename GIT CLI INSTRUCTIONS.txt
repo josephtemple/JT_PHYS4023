@@ -4,7 +4,7 @@
 git init
 git remote add origin https://github.com/josephtemple/REPO_NAME.git
 git add "FOLDER NAME"
-git comment -m "Init commit"
+git commit -m "Init commit"
 git branch -M main
 git push -u origin main
 
