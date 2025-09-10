@@ -1,4 +1,4 @@
-1a. Navigate to this directory.
+1a. Navigate to desired directory.
 1b. If establishing a connection to a new repository, we need to start with:
 
 git init
@@ -13,6 +13,6 @@ git push -u origin main
 
 git add "FOLDER NAME"
 git commit -m "COMMIT COMMENT"
-git pull --rebase
+git pull --rebase    # unecessary if working alone
 git push
  
