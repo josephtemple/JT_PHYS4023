@@ -1,8 +1,8 @@
 """
-step1.py
+step2.py
 
-This script implements collision and border detection on top of step0. Nonzero chance I might replace
-step0 entirely since this doesn't add new physics just... correct physics.
+Same as step1, except now we handle the Brownian rotation in a sensible manner (i.e. as a random walk
+in theta, rather than resetting the angle each step.)
 """
 
 import numpy as np
@@ -11,12 +11,18 @@ import matplotlib.animation as animation
 from matplotlib.patches import Circle
 plt.rcParams['figure.dpi'] = 150
 
-def V(x, y):
-    """
-    Potential function of 2D Cartesian coordinates. Has four minima and one maximum in the middle
-    """ 
-    return -5 * np.ones_like(x)
+# potential and its gradient
+def V(x, y, A = 10):
+    return A * (x**4 - x**2 + y**4 - y**2)
 
+def del_V(x, y, A = 10):
+    dVds = lambda s: A *(4 * s**3 - 2 * s)
+    dVdx = dVds(s=x)
+    dVdy = dVds(s=y)
+
+    return np.array([dVdx, dVdy])
+
+# defining the box
 L = 1
 n_pts = 500
 x_range = np.linspace(-L, L, n_pts)
@@ -24,8 +30,8 @@ y_range = np.linspace(-L, L, n_pts)
 
 X, Y = np.meshgrid(x_range, y_range)
 
-
-class PassiveBrownianParticles:
+# Particle class
+class Particles:
     def __init__(self, x_i, y_i, v_i, theta_i):
         self.n = len(x_i)
         self.x = x_i
@@ -35,13 +41,15 @@ class PassiveBrownianParticles:
         self.theta = theta_i
 
         self.radius = 0.02
-        self.dt = 1/200
+        self.diffusion_rate = 100
+        self.mobility = 0.1
+        self.dt = 1/500
 
     def update(self):
         # brownian-ly change direction
-        self.theta = 2*np.pi * np.random.random(size=self.n)
+        self.theta += np.sqrt(2 * self.diffusion_rate * self.dt) * np.random.normal(size = self.n)
 
-        # lazy collision detection, checking each pair of particles
+        # collision detection, checking each pair of particles
         for i in range(self.n):
             for j in range(i+1, self.n):
                 delta_x = self.x[j] - self.x[i]
@@ -69,24 +77,27 @@ class PassiveBrownianParticles:
                     self.y[j] = self.y[j] + dy / 2
 
             # boundary conditions: reverse along that direction
-            if self.x[i] - self.radius < -1:
-                self.x[i] = -1 + self.radius
+            if self.x[i] - self.radius < -L:
+                self.x[i] = -L + self.radius
                 self.theta[i] = np.pi - self.theta[i] # (vx, vy) -> (-vx, vy) 
-            if self.x[i] + self.radius > 1:
-                self.x[i] = 1 - self.radius
+            if self.x[i] + self.radius > L:
+                self.x[i] = L - self.radius
                 self.theta[i] = np.pi - self.theta[i] 
-            if self.y[i] - self.radius < -1:
-                self.y[i] = -1 + self.radius
+            if self.y[i] - self.radius < -L:
+                self.y[i] = -L + self.radius
                 self.theta[i] = -self.theta[i] # (vx, vy) -> (vx, -vy) 
-            if self.y[i] + self.radius > 1:
-                self.y[i] = 1 - self.radius
+            if self.y[i] + self.radius > L:
+                self.y[i] = L - self.radius
                 self.theta[i] = -self.theta[i] 
 
-
+        self.theta %= 2*np.pi
 
     def step(self):
-        self.x += self.v * np.cos(self.theta) * self.dt
-        self.y += self.v * np.sin(self.theta) * self.dt
+        gradV = del_V(self.x, self.y)
+        Fx, Fy = -self.mobility * gradV
+
+        self.x += (self.v * np.cos(self.theta) + Fx) * self.dt
+        self.y += (self.v * np.sin(self.theta) + Fy) * self.dt
 
     def get_position(self):
         return self.x, self.y
@@ -94,23 +105,23 @@ class PassiveBrownianParticles:
 
 # defining particle ensemble 
 N = 100
-particle_spawn_lim = 0.95
+particle_spawn_lim = 0.7 * L
 xs, ys = np.random.uniform(-particle_spawn_lim, particle_spawn_lim, (2,N))
 thetas = np.random.uniform(0, 2*np.pi, N)
 v0 = 2
 vs = np.ones(N) * v0
 
-particle_ensemble = PassiveBrownianParticles(xs, ys, vs, thetas)
+particle_ensemble = Particles(xs, ys, vs, thetas)
 
 # plot potential with a colormap
 fig = plt.figure()
-ax = plt.axes(xlim=(-1, 1), ylim=(-1, 1))
-fig.suptitle("Simple Brownian motion of an ensemble of particles")
-potential = V(X, Y)
+ax = plt.axes(xlim=(-L, L), ylim=(-L, L))
+fig.suptitle("Active Brownian motion of an ensemble of particles")
+potential = V(X, Y, A = 1)
 im = ax.imshow(potential, extent=(-L, L, -L, L), cmap = 'PiYG')
 ax.set_xticks([])
 ax.set_yticks([])
-#cbar = fig.colorbar(im, ax=ax, label="Potential")
+cbar = fig.colorbar(im, ax=ax, label="Potential")
 
 # create particles as circles on that potential
 particles = []
@@ -119,6 +130,7 @@ for i in range(N):
         ax.add_patch(particle)
         particles.append(particle)
 
+# animation functions and actually animating
 def init():
     """initialize animation"""
     return particles
