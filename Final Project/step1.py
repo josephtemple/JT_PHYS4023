@@ -97,7 +97,7 @@ N = 100
 particle_spawn_lim = 0.95
 xs, ys = np.random.uniform(-particle_spawn_lim, particle_spawn_lim, (2,N))
 thetas = np.random.uniform(0, 2*np.pi, N)
-v0 = 2
+v0 = 7
 vs = np.ones(N) * v0
 
 particle_ensemble = PassiveBrownianParticles(xs, ys, vs, thetas)
@@ -105,7 +105,7 @@ particle_ensemble = PassiveBrownianParticles(xs, ys, vs, thetas)
 # plot potential with a colormap
 fig = plt.figure()
 ax = plt.axes(xlim=(-1, 1), ylim=(-1, 1))
-fig.suptitle("Simple Brownian motion of an ensemble of particles")
+fig.suptitle("Active Brownian motion of an ensemble of particles")
 potential = V(X, Y)
 im = ax.imshow(potential, extent=(-L, L, -L, L), cmap = 'PiYG')
 ax.set_xticks([])
@@ -134,13 +134,13 @@ def animate(t):
 
 anim = animation.FuncAnimation(fig, animate, init_func = init, frames=300, interval=5, blit=True)
 
-save = False
+save = True
 if save:
     import os
     script_dir = os.path.dirname(os.path.abspath(__file__))
     print(script_dir)
     writer = animation.FFMpegWriter(fps=30, codec='libx264', extra_args=['-pix_fmt', 'yuv420p', '-profile:v', 'baseline', '-level', '3.0'])
-    anim.save(f'{script_dir}/videos/step0.mp4', writer=writer)
+    anim.save(f'{script_dir}/videos/step1fast.mp4', writer=writer)
 
 plt.show()
 plt.close()

@@ -41,8 +41,8 @@ class Particles:
         self.theta = theta_i
 
         self.radius = 0.02
-        self.diffusion_rate = 100
-        self.mobility = 0.1
+        self.diffusion_rate = 5
+        self.mobility = .05
         self.dt = 1/500
 
     def update(self):
@@ -116,7 +116,7 @@ particle_ensemble = Particles(xs, ys, vs, thetas)
 # plot potential with a colormap
 fig = plt.figure()
 ax = plt.axes(xlim=(-L, L), ylim=(-L, L))
-fig.suptitle("Active Brownian motion of an ensemble of particles")
+fig.suptitle(r"Active Brownian motion of an ensemble, low $D$ low $\mu$")
 potential = V(X, Y, A = 1)
 im = ax.imshow(potential, extent=(-L, L, -L, L), cmap = 'PiYG')
 ax.set_xticks([])
@@ -146,13 +146,13 @@ def animate(t):
 
 anim = animation.FuncAnimation(fig, animate, init_func = init, frames=300, interval=5, blit=True)
 
-save = False
+save = True
 if save:
     import os
     script_dir = os.path.dirname(os.path.abspath(__file__))
     print(script_dir)
     writer = animation.FFMpegWriter(fps=30, codec='libx264', extra_args=['-pix_fmt', 'yuv420p', '-profile:v', 'baseline', '-level', '3.0'])
-    anim.save(f'{script_dir}/videos/step0.mp4', writer=writer)
+    anim.save(f'{script_dir}/videos/step2lowDhlowmu.mp4', writer=writer)
 
 plt.show()
 plt.close()
