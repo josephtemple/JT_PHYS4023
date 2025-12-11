@@ -1,0 +1,203 @@
+\documentclass{article}
+
+% Essentials and Formatting
+\usepackage[utf8]{inputenc}                          % encodes unicode stuff
+\usepackage{graphicx}                                % helps make pretty pictures
+\usepackage{multicol}                                % multicolumn/multirow cells in tables
+\usepackage{dcolumn}                                 % Align table columns on decimal point
+\usepackage[table,usenames,dvipsnames]{xcolor}       % extra colors (i like ForestGreen)
+\usepackage{xparse}                                  % make new commands i think
+\usepackage[margin=1in]{geometry}                    % controls document shape/size
+%\usepackage[backend=biber, sorting=nyt]{biblatex-chicago}              % for bibliographies
+\usepackage{calligra}                                % solely for Griffiths r
+\usepackage{fancyhdr}                                % control of headers and footers
+\usepackage{lastpage}                                % not entirely sure tbh
+\usepackage{titlesec}                                % control of section heading formatting
+\usepackage{listings}                                % for formatting code nicely
+\usepackage{url}                                     % for url in appendix
+
+% Math and Science
+\usepackage{bbm, bm}                   % "blackboard bold" for real numbers
+\usepackage{amsmath}                   % makes typing math stuff easier
+\usepackage{amsthm}                    % makes typing actual math stuff easier
+\usepackage{siunitx}                   % makes typing units easier
+\usepackage{derivative}                % makes typing derivatives easier
+\usepackage[version=4]{mhchem}         % makes typing chemistry easier
+
+% Graphs, Tables, and Figures
+\usepackage{tikz}                      % pictures
+\usepackage{pgfplots}                  % pretty graphs
+\usepackage{pgfplotstable}             % formatting options for tables
+\usepackage{adjustbox}                 % puts a box around things that are too big and makes them smaller
+\usepackage{caption}                   % caption stuff for tables and plots
+\usepackage{subcaption}                % same but for subtables and subfigures
+\usepackage{csvsimple}                 % easy compatability with comma separated value files
+
+% Citations and references
+\usepackage{natbib}                                  % for STEM, uses bibtex NOT biber
+\setcitestyle{square, super}
+%\usepackage[backend=biber, sorting=nyt]{biblatex}   % for basically only Music History
+\usepackage{bookmark}                                % bookmarks. includes hyperref
+\usepackage{cleveref}                                % automatically determines the kind of reference
+
+% Package configuration
+\hypersetup{colorlinks=true, allcolors=blue}
+\sisetup{per-mode = fraction, list-final-separator = {, and }, group-digits=integer, fraction-function=\tfrac}
+\pgfplotsset{compat=1.18}
+%\addbibresource{sources.bib} % Remember to run biber 'filename' in the terminal if using
+%\bibliography{sources} % Move to end of file when using natbib
+\fancypagestyle{firststyle}
+{
+    \fancyhf{}
+    \fancyhead[L]{PHYS 4023 $-$ Final Report}
+    \fancyhead[R]{Joseph Temple}
+    \renewcommand{\headrulewidth}{0pt} % removes horizontal header line
+    \setlength{\headheight}{26.0pt}
+
+    \fancyfoot[C]{\thepage}
+}
+
+% The actual document
+\begin{document}
+\input{title/titlepage.tex}
+
+\pagestyle{firststyle}
+
+\section{Introduction}
+
+Active Brownian Particles (ABPs) are a minimal model for self-propelled agents in a thermal environment. 
+The three key ideas are:
+\begin{itemize}
+    \item \textbf{Brownian particles:} random motion due to collisions with a surrounding fluid (thermal noise).
+    \item \textbf{Active:} particles also possess an intrinsic self-propulsion at a characteristic speed.
+    \item \textbf{External field:} particles respond to spatial variations in an environmental potential.
+\end{itemize}
+
+This work implements a simple discrete-time ABP model and examines how an external potential modifies 
+the single-particle dynamics and the collective emergent behavior.
+
+\section{Background: Brownian and Active Motion}
+
+\subsection{Regular Brownian Motion}
+Brownian motion refers to the random translational and rotational perturbations that particles experience 
+due to collisions with many much lighter fluid molecules. In the overdamped limit we assume that collisions 
+rapidly randomize the orientation of a particle's velocity vector while leaving its speed (magnitude of 
+self-propulsion) approximately constant.
+
+\subsection{Active Brownian Motion}
+Active Brownian Particles add a self-propelled velocity of fixed magnitude \(v\) whose direction evolves 
+under rotational diffusion. In 2D we denote by \(\theta_i(t)\) the orientation angle of particle \(i\) at 
+time \(t\). The orientation is driven by stochastic noise and the position is updated by deterministic 
+self-propulsion plus any external forces.
+
+\section{Model and Discrete-Time Updates}
+
+The discrete-time update rules used in the simulations are:
+
+\begin{align}
+\theta_i(t+\Delta t) &= \theta_i(t) + \sqrt{2D\,\Delta t}\,\xi_i(t), \label{eq:theta-update}\\
+x_i(t+\Delta t) &= x_i(t) + \Big[ v\cos\theta_i(t) \;-\; \mu\,\nabla_x V\big(x_i(t),y_i(t)\big) \Big]\Delta t, \label{eq:x-update}\\
+y_i(t+\Delta t) &= y_i(t) + \Big[ v\sin\theta_i(t) \;-\; \mu\,\nabla_y V\big(x_i(t),y_i(t)\big) \Big]\Delta t. \label{eq:y-update}
+\end{align}
+
+Notes on the parameters and terms:
+\begin{itemize}
+    \item \(\xi_i(t)\) is a sample from a standard normal distribution \(\mathcal{N}(0,1)\); 
+    samples across different \(t\) and \(i\) are independent.
+    \item \(D\) is the rotational diffusion coefficient. \(D\) can be related to temperature \(T\), 
+    viscosity of the fluid \(\eta\), and particle radius \(R\) through 
+    \(D \sim \dfrac{k_B T}{6\pi \eta R}\). $2D\Delta t$ is the variance of the probability
+    distribution defining $\theta$ updates.
+    \item \(v\) is the self-propulsion speed (kept constant).
+    \item \(\mu\) is the motility, controlling how strongly the particle 
+    responds to the potential gradient.
+    \item \(-\nabla V\) gives the force field associated with potential \(V(x,y)\).
+\end{itemize}
+
+\section{External Potential}
+
+To introduce nontrivial spatial dependence I used the following quartic potential, with four minima 
+and one maximum:
+\[
+V(x,y) = A\bigl[x^4 - x^2 + y^4 - y^2 \bigr],
+\]
+where \(A\) sets the potential strength/scale. This choice produces multiple attractor regions and rich 
+gradients that interact with the self-propulsion to produce nonlinear phase-like behaviour.
+
+The corresponding force components are
+\[
+-\nabla_x V(x,y) = -A(4x^3 - 2x), \qquad -\nabla_y V(x,y) = -A(4y^3 - 2y).
+\]
+
+\section{Numerical Implementation}
+
+Simulations were performed with the updates described in Eqs. \ref{eq:theta-update} $-$ \ref{eq:y-update} 
+with a fixed timestep \(\Delta t\).  Typical choices used in experiments:
+\begin{itemize}
+    \item \(v \sim \mathcal{O}(1)\) (units set by simulation).
+    \item \(\Delta t \ll 1\), chosen small enough to keep updates stable.
+    \item \(A\) varied to explore weak-to-strong external fields.
+    \item \(\mu\) scanned to vary sensitivity to the field (small \(\mu\) yields weak response; 
+    large \(\mu\) yields strong response).
+    \item \(D\) scanned to see effects of rotational diffusion (large \(D\) rapidly randomizes orientation; 
+    small \(D\) preserves orientation longer).
+\end{itemize}
+
+We also implemented basic collision detection, both between particles and with the walls of the container.
+In short, if the distance between the center of two particles becomes less than twice the radius
+they intersect with one another, which we correct for by pushing them apart and reversing direction. A similar
+rule is applied to collisions with the boundary, where a reflection along $x$ or $y$ is added when
+the center of a particle gets within one radius of a vertical or horizontal boundary, respectively.
+
+\section{Results and Observations}
+
+With no external field (\(A=0\)) the particle performs persistent random walks whose 
+persistence length depends on \(v/D\).
+Adding the potential biases motion toward wells: when \(\mu A\) is moderate, particles tend 
+    to be attracted to stable wells; with strong motility the interplay between self-propulsion and the 
+    potential leads to trapping and escape events that depend sensitively on \(D\) and \(v\).
+
+When many-particle or long-time behavior is considered, the system can exhibit emergent patterns not present 
+in the single deterministic parts: multiple steady-state populations, metastable trapping regions, and 
+transitions between regimes as parameters vary. This qualitatively matches the expectation that ABPs 
+interacting with nontrivial fields produce phase-like transitions and rich stochastic dynamics.
+
+
+We generated a number of short videos showing the behavior of the system in different regimes, notably
+by varying $D$ and $\mu$. These animations and full code live on GitHub (see Appendix). As a dynamic phemenon,
+an image embedded in a PDF does not provide a particularly strong impression of the work, but one
+will be provided nonetheless.
+\begin{figure}[ht]
+    \centering
+
+    \includegraphics[width=0.7\textwidth]{./fig/screenshot.png}
+
+    \caption{Example of ABP visualization.}
+
+    \label{fig:init}
+\end{figure}
+
+\section{Discussion and Conclusion}
+
+The combination of self-propulsion, rotational diffusion, and spatially varying forces produces nontrivial 
+steady states and dynamics. The quartic potential used here is simple but already generates a landscape with 
+multiple stable/unstable regions; scanning \((D,\mu,A,v)\) surfaces reveals parameter ranges where trapping or 
+persistent circulation dominate.
+
+Active Brownian Particles in an external field demonstrate how simple stochastic microscopic rules 
+combine to produce complex, nonlinear macroscopic behaviour. The minimal ABP model with a quartic 
+separable potential reveals trapping, drift, and parameter-dependent transitions that are qualitatively 
+representative of chemotactic or field-responsive active matter.
+
+\section{Code Availability}
+\label{sec:appendix}
+
+The full code and animations mp4s are available on GitHub:
+\begin{itemize}
+    \item \url{https://github.com/josephtemple/JT_PHYS4023} (project root)
+    \item Particularly relevant folders: \texttt{Final Project} and \texttt{Final\ Project/videos} 
+    (see the repository for exported frames and movies).
+\end{itemize}
+
+
+\end{document}
